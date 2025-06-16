@@ -5,7 +5,14 @@
   "private": true,
   "main": "agent/index.ts",
   "scripts": {
-    "prepare": "npm run build",
+    "start": "npm run build & npm run hook",
+    "xiaobuniao": "npm run build & frida -U -f com.xiaobuniao.cat --no-pause -l _agent.js",
+    "taozi": "npm run build & frida -U -f voice.taoziplanet.com --no-pause -l _agent.js",
+    "duoduo": "npm run build & frida -U -f com.duoduolive.party --no-pause -l _agent.js",
+    "youting": "npm run build & frida -U -f com.yuyin.youtingyuyin --no-pause -l _agent.js",
+    "solo": "npm run build & frida -U -f com.wekool.voice --no-pause -l _agent.js",
+    "wekool": "npm run build & frida -U -f com.sound.wekool --no-pause -l _agent.js",
+    "boto": "npm run build & frida -U -f com.boto.world --no-pause -l _agent.js",
     "build": "frida-compile agent/index.ts -o _agent.js -c",
     "watch": "frida-compile agent/index.ts -o _agent.js -w"
   },

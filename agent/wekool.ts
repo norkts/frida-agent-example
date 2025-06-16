@@ -10,7 +10,6 @@ log(hexdump(header.readByteArray(16) as ArrayBuffer, { ansi: true }));
 
 function hook_ssl_verify_result(address: NativePointerValue)
 {
-    console.log("Hooking ssl_verify_result")
     Interceptor.attach(address, {
         onEnter: function(args) {
             console.log("Disabling SSL validation")
