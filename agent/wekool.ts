@@ -42,7 +42,7 @@ function disablePinning(){
     //     return;
     // }
 
-    var address = Module.findBaseAddress('libflutter.so')?.add(0xA8584C)
+    var address = findBaseAddress('libflutter.so')?.add(0xA8584C)
 
     if(address){
         hook_ssl_verify_result(address);
@@ -50,7 +50,20 @@ function disablePinning(){
 }
 
 disablePinning();
-
+function findBaseAddress(name:string){
+    var resModule:Module ;
+    Process.enumerateModules().forEach(module => {
+        log("Module: " + module.name + ", Base Address: " + module.base)
+        if(module.name == name){
+            resModule = module;
+        }
+    });
+    if(resModule!){
+        log("Module: " + resModule.name + ", Base Address: " + resModule.base);
+        return resModule.base;
+    }
+    return null;
+}
 
 //hook java com.tencent.imsdk.v2.V2TIMManagerImpl#initSDK
 // Java.perform(function() {

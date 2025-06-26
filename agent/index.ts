@@ -36,6 +36,7 @@ function disablePinning(){
         "com.weekool.voice": 0xA8584C,
         "com.sound.wekool": 0xA8584C,
         "com.boto.world": 0x6C4C20,
+        "com.fxwl.tuyouda": 0x596870,
     };
     // const pc = packagePcMap[packagename];
     // log("ssl_start_pc:"+pc)
@@ -43,11 +44,26 @@ function disablePinning(){
     //     return;
     // }
 
-    var address = Module.findBaseAddress('libflutter.so')?.add(0xA8584C)
+    var address = findBaseAddress('libflutter.so')?.add(0x596870)
 
     if(address){
         hook_ssl_verify_result(address);
     }
+}
+
+function findBaseAddress(name:string){
+    var resModule:Module ;
+    Process.enumerateModules().forEach(module => {
+        log("Module: " + module.name + ", Base Address: " + module.base)
+        if(module.name == name){
+            resModule = module;
+        }
+    });
+    if(resModule!){
+        log("Module: " + resModule.name + ", Base Address: " + resModule.base);
+        return resModule.base;
+    }
+    return null;
 }
 
 disablePinning();

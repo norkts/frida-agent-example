@@ -13,6 +13,7 @@
     "solo": "npm run build & frida -U -f com.wekool.voice --no-pause -l _agent.js",
     "wekool": "npm run build & frida -U -f com.sound.wekool --no-pause -l _agent.js",
     "boto": "npm run build & frida -U -f com.boto.world --no-pause -l _agent.js",
+    "mk": "npm run build & frida -U -f com.fxwl.tuyouda --no-pause -l _agent.js",
     "build": "frida-compile agent/index.ts -o _agent.js -c",
     "watch": "frida-compile agent/index.ts -o _agent.js -w"
   },
