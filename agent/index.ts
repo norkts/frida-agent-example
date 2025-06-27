@@ -44,7 +44,7 @@ function disablePinning(){
     //     return;
     // }
 
-    var address = findBaseAddress('libflutter.so')?.add(0x596870)
+    var address = Module.findBaseAddress('libflutter.so')?.add(0x596870)
 
     if(address){
         hook_ssl_verify_result(address);
@@ -67,7 +67,26 @@ function findBaseAddress(name:string){
 }
 
 disablePinning();
+hook_huanxin();
 
+function hook_huanxin(){
+    Java.perform(function() {
+        var EMClient = Java.use("com.hyphenate.chat.EMClient");
+        EMClient.init.implementation = function(context:any, options:any) {
+            console.log("options: " + options.getAppKey());
+            // 调用原始方法
+            return this.init.call(this, context,  options);
+        };
+
+        //com.hyphenate.chat.EMChatRoomManager#joinChatRoom
+        var EMChatRoomManager = Java.use("com.hyphenate.chat.EMChatRoomManager");
+        EMChatRoomManager.joinChatRoom.implementation = function(chatRoomId:string, listener:any) {
+            console.log("joinChatRoom - chatRoomId: " + chatRoomId);
+            // 调用原始方法
+            return this.joinChatRoom.call(this, chatRoomId, listener);
+        };
+    });
+}
 
 //hook java com.tencent.imsdk.v2.V2TIMManagerImpl#initSDK
 // Java.perform(function() {
