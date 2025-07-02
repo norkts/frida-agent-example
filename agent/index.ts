@@ -1,7 +1,6 @@
 import { log } from "./logger.js";
 import {Context} from "node:vm";
 
-console.log(this);
 const header = Memory.alloc(16);
 header
     .writeU32(0xdeadbeef).add(4)
@@ -9,6 +8,14 @@ header
     .writeU64(uint64("0x1122334455667788"));
 log(hexdump(header.readByteArray(16) as ArrayBuffer, { ansi: true }));
 
+const packagename = getPackageName();
+
+function getPackageName(){
+    const cmdline = new File("/proc/self/cmdline", "r");
+    const packageName = cmdline.readLine();
+    cmdline.close();
+    return packageName;
+}
 function hook_ssl_verify_result(address: NativePointerValue)
 {
     console.log("Hooking ssl_verify_result")
@@ -23,6 +30,7 @@ function hook_ssl_verify_result(address: NativePointerValue)
         }
     });
 }
+
 function disablePinning(){
     // Change the offset on the line below with the binwalk result
     // If you are on 32 bit, add 1 to the offset to indicate it is a THUMB function: .add(0x1)
@@ -38,13 +46,13 @@ function disablePinning(){
         "com.fxwl.tuyouda": 0x596870,
         "voice.ananplanet.com": 0x6dbef4,
     };
-    // const pc = packagePcMap[packagename];
-    // log("ssl_start_pc:"+pc)
-    // if(!pc){
-    //     return;
-    // }
+    const sslAddr = packagePcMap[packagename];
+    log("ssl_start_pc:"+sslAddr)
+    if(!sslAddr){
+        return;
+    }
 
-    var address = Module.findBaseAddress('libflutter.so')?.add(0x6dbef4)
+    var address = Module.findBaseAddress('libflutter.so')?.add(sslAddr)
 
     if(address){
         hook_ssl_verify_result(address);
