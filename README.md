@@ -1,6 +1,11 @@
 ### How to compile & load
 
 ```sh
+$ sudo pip3 install frida==16.4.1
+$ sudo pip3 intsall frida-tools==13.6.1
+```
+
+```sh
 $ git clone https://github.com/oleavr/frida-agent-example.git
 $ cd frida-agent-example/
 $ npm install
