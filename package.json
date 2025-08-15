@@ -15,6 +15,13 @@
     "boto": "npm run build & frida -U -f com.boto.world -l _agent.js",
     "mk": "npm run build & frida -U -f com.fxwl.tuyouda -l _agent.js",
     "anan": "npm run build & frida -U -f voice.ananplanet.com -l _agent.js",
+    "jingjing": "npm run build & frida -U -f com.jingjing.party -l _agent.js",
+    "yepan": "npm run build & frida -U -f shop.tjx178.yepan -l _agent.js",
+    "jixing": "npm run build & frida -U -f com.jixing.party -l _agent.js",
+    "sj": "npm run build & frida -U -f com.sj.chat.app -l _agent.js",
+    "qiumu": "npm run build & frida -U -f com.yuyin.yunduanpaidui -l _agent.js",
+    "youyou": "npm run build & frida -U -f com.starlight.world -l _agent.js",
+    "miyo": "npm run build & frida -U -f com.happy8.miyovoice -l _agent.js",
     "build": "frida-compile agent/index.ts -o _agent.js -c",
     "watch": "frida-compile agent/index.ts -o _agent.js -w"
   },
