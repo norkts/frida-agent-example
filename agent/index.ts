@@ -10,6 +10,19 @@ header
 log(hexdump(header.readByteArray(16) as ArrayBuffer, { ansi: true }));
 
 const packagename = getPackageName();
+hook_anti_bangbang();
+// hook_android();
+// hookRongIM();
+// disablePinning();
+// hookHawk();
+// hook_tencent_imsdk();
+// hook_agora();
+// hookNim();
+// hook_md5();
+// hook_huanxin();
+// hook_taqu();
+// hook_pengran();
+// hook_qinsi();
 
 function getPackageName(){
     const cmdline = new File("/proc/self/cmdline", "r");
@@ -22,14 +35,24 @@ function hook_ssl_verify_result(address: NativePointerValue)
     console.log("Hooking ssl_verify_result")
     Interceptor.attach(address, {
         onEnter: function(args) {
-            // console.log("Disabling SSL validation")
+            console.log("Disabling SSL validation")
         },
         onLeave: function(retval)
         {
-            // console.log("Retval: " + retval)
+            console.log("Retval: " + retval)
             retval.replace(ptr(0x1));
         }
     });
+}
+
+function hook_android(){
+    const Application = Java.use("android.app.Application");
+    Application.attachBaseContext.implementation = function(context:any){
+        console.log("attach -: " + object2string(context));
+        const res = this.attach.call(this, context);
+        hookNim();
+        return res;
+    };
 }
 
 function disablePinning(){
@@ -37,8 +60,9 @@ function disablePinning(){
     // If you are on 32 bit, add 1 to the offset to indicate it is a THUMB function: .add(0x1)
     // Otherwise, you will get 'Error: unable to intercept function at ......; please file a bug'
     const packagePcMap:{[key:string]:number} = {
-        "com.xiaobuniao.cat": 0x6dbef4,
-        "com.duoduolive.party":  0x5dc570,
+        "com.lvpaopao.party": 0x6dbef4,
+        "com.voiceparty.app": 0x6dbef4,
+        "com.huwei.laiwanya":  0x5dc570,
         "voice.taoziplanet.com": 0x6DBEF4,
         "com.yuyin.youtingyuyin": 0x596870,
         "com.weekool.voice": 0xA8584C,
@@ -48,8 +72,12 @@ function disablePinning(){
         "com.fxwl.tuyouda": 0x596870,
         "voice.ananplanet.com": 0x6dbef4,
         "com.jingjing.party": 0x6dbef4,
+        "com.bumian.voice": 0x6dbef4,
         "com.yuyin.yunduanpaidui": 0x596870,
-        "com.happy8.miyovoice":0x5fdf60,
+        "com.happy8.miyotribe":0x5fdf60,
+        "com.yunxi.iuu":0x596870,
+        "com.ruidafeng.youyouyuyin":0x6E85FC,
+        "com.vioceinfuture.confession":0x726460
     };
     const sslAddr = packagePcMap[packagename];
     log("ssl_start_pc:"+sslAddr)
@@ -62,6 +90,23 @@ function disablePinning(){
     if(address){
         hook_ssl_verify_result(address);
     }
+}
+
+function hook_md5(){
+    var addr = Module.findBaseAddress('libapp.so');
+    if(addr == null){
+        console.log("libapp.so not found")
+        return;
+    }
+    var funcAddr = addr.add(0xd9fb01);
+    Interceptor.attach(funcAddr, {
+        onEnter: function(args) {
+            console.log("参数:", hexdump(args[0]))
+        },
+        onLeave: function(retval) {
+            console.log("返回值:", hexdump(retval))
+        }
+    })
 }
 
 function findBaseAddress(name:string){
@@ -78,13 +123,6 @@ function findBaseAddress(name:string){
     }
     return null;
 }
-
-// hookRongIM();
-disablePinning();
-// hookHawk();
-// hook_tencent_imsdk();
-// hookNim();
-hook_huanxin();
 
 function hookHawk(){
     Java.perform(function() {
@@ -120,12 +158,20 @@ function hook_huanxin(){
             return this.joinChatRoom.call(this, chatRoomId, bool, reason, listener);
         };
 
-        var methodCallWrapper = Java.use("s3.w4");
-        methodCallWrapper.onMethodCall.implementation = function(methodCall:any, result:any) {
-            const res = this.onMethodCall.call(this, methodCall, result);
-            // console.log("onMethodCall - method: " + methodCall.method.value + ",result=" + object2string(result) + ", param:" + methodCall.arguments());
-            return res;
-        }
+        var GroupMananger = Java.use("com.hyphenate.chat.EMGroupManager");
+
+        GroupMananger.joinGroup.implementation = function(groupId:string) {
+            console.log("joinGroup - groupId: " + groupId);
+            // hook joinGroup
+            return this.joinGroup.call(this, groupId);
+        };
+
+        // var methodCallWrapper = Java.use("s3.w4");
+        // methodCallWrapper.onMethodCall.implementation = function(methodCall:any, result:any) {
+        //     const res = this.onMethodCall.call(this, methodCall, result);
+        //     // console.log("onMethodCall - method: " + methodCall.method.value + ",result=" + object2string(result) + ", param:" + methodCall.arguments());
+        //     return res;
+        // }
     });
 }
 
@@ -226,10 +272,36 @@ function hook_tencent_imsdk(){
         };
 
         V2TIMManagerImpl.joinGroup.implementation = function( groupID:string, message:string,callback:any) {
-            console.log("joinGroup - userID: " + groupID + ",message:" + message);
+            console.log("joinGroup - groupID: " + groupID + ",message:" + message);
             // hook joinGroup
             return this.joinGroup.call(this, groupID, message, callback);
         };
+
+        V2TIMManagerImpl.createGroup.implementation = function( var1:string, var2:string,var3:string,callback:any) {
+            console.log("createGroup - var1: " + var1 + ",var2:" + var2 + ",var3:" + var3);
+            // hook joinGroup
+            return this.createGroup.call(this, var1, var2, var3, callback);
+        };
+
+        // var ImManager = Java.use("cn.douyuu.im.core.ImManager");
+        // ImManager.OooO0o.implementation = function( var1:string, var2:string,callback:any) {
+        //     console.log("login - var1: " + var1 + ",var2:" + var2);
+        //     // hook login
+        //     return this.OooO0o.call(this, var1, var2,callback);
+        // };
+
+        // ImManager.autoLogin.implementation = function(var1:string,callback:any) {
+        //     console.log("autoLogin:" + var1);
+        //     // hook autoLogin
+        //     return this.autoLogin.call(this, var1,callback);
+        // };
+
+        // ImManager.OooO.implementation = function( roomId:string,callback:any) {
+        //     console.log("joinGroup - var1: " + roomId);
+        //     // hook OooOo00
+        //     return this.OooO.call(this, roomId, callback);
+        // };
+
     });
 }
 
@@ -260,6 +332,12 @@ function hookRongIM(){
             return this.init.call(this, context, rongkey, z10,bool);
         };
 
+        RongIMClient.connect.overload('java.lang.String', 'int', 'io.rong.imlib.RongIMClient$ConnectCallback').implementation = function(token:string, timeLimit:number, callback:any) {
+            console.log("connect - token: " + token);
+            // hook joinExistChatRoom
+            return this.connect.call(this, token, timeLimit, callback);
+        };
+
         RongIMClient.joinChatRoom.implementation = function(chatRoomId:string, defMessageCount:number, listener:any) {
             console.log("joinChatRoom - chatRoomId: " + chatRoomId);
             // hook joinExistChatRoom
@@ -281,7 +359,7 @@ function hookNim(){
         var NIMClient = Java.use("com.netease.nimlib.sdk.NIMClient");
         NIMClient.init.implementation = function(context:any, loginInfo:any, options:any){
             if(loginInfo){
-                console.log("init - account: " + loginInfo.account + ",token:" + loginInfo.account);
+                console.log("init - account: " + loginInfo.account + ",token:" + loginInfo.token);
             }
             console.log("init - appKey: " + options.appKey);
             return this.init.call(this, context, loginInfo, options);
@@ -289,17 +367,326 @@ function hookNim(){
 
         NIMClient.config.implementation = function(context:any, loginInfo:any, options:any){
             if(loginInfo){
-                console.log("init - account: " + loginInfo.account + ",token:" + loginInfo.account);
+                console.log("init - account: " + loginInfo.account + ",token:" + loginInfo.token);
             }
             console.log("init - appKey: " + options.appKey);
             return this.config.call(this, context, loginInfo, options);
         };
 
-        var AuthService = Java.use("com.netease.nimlib.sdk.auth.AuthService");
+        var AuthService = Java.use("com.netease.nimlib.d.f.a");
 
         AuthService.login.implementation = function(loginInfo:any){
-            console.log("login - account: " + loginInfo.account + ",token:" + loginInfo.account);
+            console.log("login -: " + object2string(loginInfo));
             return this.login.call(this, loginInfo);
         };
+
+        var ChatRoomService = Java.use("com.netease.nimlib.chatroom.e.a");
+
+        ChatRoomService.enterChatRoomEx.implementation = function (data:any, retry:any){
+            console.log("enterChatRoomEx -: " + object2string(data));
+            return this.enterChatRoomEx.call(this, data, retry);
+        }
+
+        ChatRoomService.enterChatRoom.implementation = function (data:any){
+            console.log("enterChatRoomEx -: " + object2string(data));
+            return this.enterChatRoom.call(this, data);
+        }
+    });
+}
+
+function hook_taqu(){
+    hook_anti_nesec();
+
+    Java.perform(function() {
+        var AppSleepBindPhoneDialog = Java.use("com.xingjiabi.shengsheng.widget.AppSleepBindPhoneDialog");
+        AppSleepBindPhoneDialog.show.implementation = function (){
+            console.log("show,return");
+            return;
+        }
+    });
+}
+
+function hook_dlopen_for_gaobai() {
+    var dlopen = Module.findExportByName(null, "dlopen");
+
+    if(dlopen == null){
+        return;
+    }
+
+    var android_dlopen_ext = Module.findExportByName(null, "android_dlopen_ext");
+
+    if(android_dlopen_ext == null){
+        return;
+    }
+
+    Interceptor.attach(dlopen, {
+        onEnter: function(args) {
+            var path_ptr = args[0];
+            var path = path_ptr.readCString();
+            console.log("[dlopen:]", path);
+        },
+        onLeave: function(retval) {}
+    });
+    Interceptor.attach(android_dlopen_ext, {
+        onEnter: function(args) {
+            var path_ptr = args[0];
+            var path = path_ptr.readCString();
+            console.log("[dlopen_ext:]", path);
+        },
+        onLeave: function(retval) {}
+    });
+}
+
+function hook_anti_nesec() {
+    const targetLibrary = "libnesec.so";
+    var baseAddress = null;
+    var androidDlopenExtPtr = Module.findExportByName(null, "android_dlopen_ext");
+    if(androidDlopenExtPtr == null){
+        console.log("android_dlopen_ext not found");
+        return;
+    }
+    Interceptor.attach(androidDlopenExtPtr, {
+        onEnter: function (args) {
+            var libraryPath = args[0].readCString();
+            if (libraryPath && libraryPath.includes(targetLibrary)) {
+                console.log("[+] Loading " + targetLibrary + " from: " + libraryPath);
+                this.isTargetLib = true;
+            }
+        },
+        onLeave: function (retval) {
+            if (this.isTargetLib) {
+                console.log("[+] " + targetLibrary + " loaded, handle: " + retval);
+                baseAddress = Module.findBaseAddress(targetLibrary);
+                console.log("[+] Base address of " + targetLibrary + " is: " + baseAddress);
+                if(baseAddress != null){
+                    // 在这里执行我们的核心绕过逻辑
+                    bypass_anti_nesec_debug(baseAddress);
+                }
+                this.isTargetLib = false;
+            }
+        }
+    });
+}
+
+function bypass_anti_nesec_debug(baseAddress: NativePointerValue) {
+
+    var pthread_create = Module.findExportByName("libc.so", "pthread_create");
+    if(pthread_create == null){
+        console.log("[-] Failed to find pthread_create")
+        return;
+    }
+    Interceptor.attach(pthread_create, {
+        onEnter: function (args) {
+            var thread_start_routine = args[2];
+            var offset = thread_start_routine.sub(baseAddress);
+            // console.log("[*] New thread created with start routine at: " + thread_start_routine);
+            // console.log("    -> Offset from libnesec.so base: " + offset);
+
+            var so_name = Process.findModuleByAddress(args[2])!.name;
+            if (so_name.indexOf("libnesec") != -1) {
+                try {
+                    Interceptor.replace(args[2], new NativeCallback(function() {
+                        console.log('replace success');
+                        return null;
+                    }, 'void', ["void"]));
+                } catch (e) {}
+            }
+        },
+        onLeave: function (retval) {
+        }
+    });
+}
+
+function hook_anti_bangbang() {
+    hook_pthread_create();
+}
+
+function hook_dlopen() {
+    var android_dlopen_ext = Module.findExportByName(null, "android_dlopen_ext");
+    if(android_dlopen_ext == null){
+        console.log("[-] android_dlopen_ext not found");
+        return;
+    }
+    Interceptor.attach(android_dlopen_ext, {
+        onEnter: function (args) {
+            var path_ptr = args[0];
+            var path = path_ptr.readCString();
+            console.log("[android_dlopen_ext -> enter", path);
+            if(path == null){
+                console.log("[-] path is null");
+                return;
+            }
+            if (args[0].readCString() != null && path.toLowerCase().indexOf("libsecshell.so") >= 0) {
+                // hook_call_constructors()
+                hook_pthread_create()
+            }
+        },
+        onLeave: function (retval) {
+        }
+    });
+}
+
+function hook_pthread_create(){
+    Interceptor.attach(Module.findExportByName(null, 'clone')!, {
+        onEnter: function (args) {
+            // 获取线程函数地址
+            var thread_func = args[0];
+
+            // 尝试获取线程函数所在模块
+            var module = Process.findModuleByAddress(thread_func);
+            if (module) {
+                console.log('Thread function is located in module: ' + module.name);
+            } else {
+
+            }
+
+            // 打印调用栈
+            console.log('Backtrace:');
+            console.log(Thread.backtrace(this.context, Backtracer.ACCURATE)
+                .map(DebugSymbol.fromAddress).join('\n'));
+        },
+        onLeave: function (retval) {
+            // 可以在这里修改 clone 的返回值（如需要）
+        }
+    });
+}
+
+function patch_func_nop(addr:NativePointer) {
+    Memory.patchCode(addr, 8, function (code) {
+        code.writeByteArray([0xE0, 0x03, 0x00, 0xAA]);
+        code.writeByteArray([0xC0, 0x03, 0x5F, 0xD6]);
+        console.log("patch code at " + addr)
+    });
+}
+function bypass_anti_bangbang_debug() {
+// 绕过梆梆对 Frida 特征的内存扫描
+    setImmediate(function() {
+        console.log("[*] 开始隐藏 Frida 特征...");
+
+        // 目标特征字符串（梆梆常检测的 Frida 相关特征）
+        var fridaFeatures = [
+            "frida", "Frida", "FRIDA",
+            "frida-agent", "frida rpc",
+            "27042", "27043" // Frida 默认端口
+        ];
+
+        // 1. Hook strstr（C 层字符串查找函数）
+        try {
+            var strstr = Module.findExportByName("libc.so", "strstr");
+            if (strstr) {
+                Interceptor.attach(strstr, {
+                    onEnter: function(args) {
+                        this.haystack = args[0].readCString(); // 被查找的字符串（内存数据）
+                        this.needle = args[1].readCString();   // 要查找的目标字符串（特征）
+                    },
+                    onLeave: function(retval) {
+                        // 若检测到梆梆在查找 Frida 特征，强制返回 NULL（未找到）
+                        if (fridaFeatures.includes(this.needle)) {
+                            console.log(`[+] 拦截特征扫描：strstr("${this.haystack}", "${this.needle}")`);
+                            retval.replace(NULL);
+                        }
+                    }
+                });
+            }
+        } catch (e) {
+            console.log("[-] strstr Hook 失败：", e);
+        }
+
+        // 2. Hook memmem（内存块查找函数，更精准的特征扫描）
+        try {
+            var memmem = Module.findExportByName("libc.so", "memmem");
+            if (memmem) {
+                Interceptor.attach(memmem, {
+                    onEnter: function(args) {
+                        this.needleLen = args[3].toInt32();
+                        // 读取要查找的特征数据（最多读取 32 字节，避免性能损耗）
+                        this.needle = args[2].readByteArray(Math.min(this.needleLen, 32));
+                    },
+                    onLeave: function(retval) {
+                        // 检测特征数据是否包含 Frida 相关字符串
+                        if (this.needle) {
+                            var needleStr = new TextDecoder().decode(this.needle).toLowerCase();
+                            if (fridaFeatures.some(f => needleStr.includes(f.toLowerCase()))) {
+                                console.log(`[+] 拦截内存特征扫描：memmem(..., "${needleStr}")`);
+                                retval.replace(NULL);
+                            }
+                        }
+                    }
+                });
+            }
+        } catch (e) {
+            console.log("[-] memmem Hook 失败：", e);
+        }
+
+        // 3. 隐藏 Frida 进程名（若 Frida-server 未改名，补充此 Hook）
+        try {
+            var getpid = Module.findExportByName("libc.so", "getpid");
+            var getppid = Module.findExportByName("libc.so", "getppid");
+            var fridaPid = Process.id; // Frida 进程 PID
+            if (getpid) {
+                Interceptor.attach(getpid, {
+                    onLeave: function(retval) {
+                        // 若当前进程是 Frida，返回宿主 APP 的 PID（伪装成 APP 进程）
+                        if (Process.id === fridaPid) {
+                            retval.replace(new NativePointer(Process.enumerateThreads()[0].id));
+                        }
+                    }
+                });
+            }
+        } catch (e) {
+            console.log("[-] 隐藏 Frida PID 失败：", e);
+        }
+    });
+}
+
+
+function hook_agora() {
+    Java.perform(function () {
+        var RtmClient = Java.use("io.agora.rtm.RtmClient");
+        RtmClient.createInstance.implementation = function (context: any, appId: string, listener: any) {
+            console.log("createInstance - appId: " + appId);
+            // hook createInstance
+            return this.createInstance.call(this, context, appId, listener);
+        };
+
+        RtmClient.login.implementation = function (rtmToken: string, userId: any, listener: any) {
+            console.log("login - rtmToken: " + rtmToken + ",userId:" + userId);
+            // hook login
+            return this.login.call(this, rtmToken, userId, listener);
+        };
+
+        RtmClient.createChannel.implementation = function (channelId: string, listener: any) {
+            console.log("login - rtmToken: " + channelId);
+            // hook login
+            return this.login.call(this, channelId, listener);
+        };
+    });
+}
+
+function  hook_vpn(){
+    const NetworkUtils = Java.use("com.qiyu.xchat_android_library.utils.NetworkUtils");
+    NetworkUtils.jtjsjtr.implementation = function (){
+        console.log("NetworkUtils.isVpn");
+        return false;
+    }
+}
+
+function hook_pengran(){
+    Java.perform(function () {
+        var MD5Utils = Java.use("com.duoduosdk.utils.codec.MD5Utils");
+        MD5Utils.getMD5String.overload("java.lang.String").implementation = function (str: string){
+            console.log("MD5Utils.getMD5String - str: " + str);
+            return this.getMD5String.call(this,str);
+        }
+    });
+}
+
+function hook_qinsi(){
+    Java.perform(function () {
+        var DataUtils = Java.use("com.shenzhilingyu.buding.utils.DataUtils");
+        DataUtils.encryptByPublicKeyForSpilt.overload("java.lang.String").implementation = function (str: string){
+            console.log("DataUtils.encryptByPublicKeyForSpilt - str: " + str);
+            return this.encryptByPublicKeyForSpilt.call(this,str);
+        }
     });
 }
