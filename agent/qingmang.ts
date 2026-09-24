@@ -11,12 +11,12 @@ header
     .writeU64(uint64("0x1122334455667788"));
 log(hexdump(header.readByteArray(16) as ArrayBuffer, { ansi: true }));
 
-const packagename = getPackageName();
-console.log(packagename);
+const packagename = "com.mango.party";//getPackageName();
+// hook_qingmang();
 // hook_anti_bangbang();
 // hook_android();
-// hookRongIM();
-disablePinning();
+hookRongIM();
+// disablePinning();
 // hookHawk();
 // hook_tencent_imsdk();
 // hook_agora();
@@ -24,7 +24,6 @@ disablePinning();
 // hook_md5();
 // hook_huanxin();
 // hook_okhttp(); // 启用OkHttp请求拦截
-// hook_hms(); // 启用HMS参数获取
 // hook_taqu();
 // hook_pengran();
 // hook_qinsi();
@@ -34,15 +33,7 @@ function getPackageName(){
     const cmdline = new File("/proc/self/cmdline", "r");
     const packageName = cmdline.readLine();
     cmdline.close();
-
-    // readLine 可能包含 null 字符，手动截断
-    if (packageName) {
-        const nullIndex = packageName.indexOf('\0');
-        if (nullIndex !== -1) {
-            return packageName.substring(0, nullIndex);
-        }
-    }
-    return packageName || "";
+    return packageName;
 }
 function hook_ssl_verify_result(address: NativePointerValue)
 {
@@ -86,12 +77,12 @@ function disablePinning(){
         "com.fxwl.tuyouda": 0x596870,
         "voice.ananplanet.com": 0x6dbef4,
         "com.app.mangguo11": 0x71b2bc,
-        "com.xiaobaiyy.voice": 0x716b60,
+        "com.orange.voice": 0x6dbef4,
         "com.yuyin.yunduanpaidui": 0x596870,
         "com.happy8.miyotribe":0x5fdf60,
         "com.yunxi.iuu":0x596870,
         "com.ruidafeng.youyouyuyin":0x6E85FC,
-        "com.amor.voice":0x753dc8
+        "com.vioceinfuture.confession":0x726460
     };
     const sslAddr = packagePcMap[packagename];
     log("ssl_start_pc:"+sslAddr)
@@ -201,7 +192,6 @@ function hook_huanxin(){
 //hook java com.tencent.imsdk.v2.V2TIMManagerImpl#initSDK
 function hook_tencent_imsdk(){
     Java.perform(function() {
-        console.log("tencent_imsdk");
         var V2TIMManagerImpl = Java.use("com.tencent.imsdk.v2.V2TIMManagerImpl");
 
         V2TIMManagerImpl.initSDK.overload("android.content.Context", "int", "com.tencent.imsdk.v2.V2TIMSDKConfig", "com.tencent.imsdk.v2.V2TIMSDKListener").implementation = function( context:Context, sdkAppID:number, V2TIMSDKConfig:object, listener:any) {
@@ -233,6 +223,26 @@ function hook_tencent_imsdk(){
             // hook joinGroup
             return this.createGroup.call(this, var1, var2, var3, callback);
         };
+
+        // var ImManager = Java.use("cn.douyuu.im.core.ImManager");
+        // ImManager.OooO0o.implementation = function( var1:string, var2:string,callback:any) {
+        //     console.log("login - var1: " + var1 + ",var2:" + var2);
+        //     // hook login
+        //     return this.OooO0o.call(this, var1, var2,callback);
+        // };
+
+        // ImManager.autoLogin.implementation = function(var1:string,callback:any) {
+        //     console.log("autoLogin:" + var1);
+        //     // hook autoLogin
+        //     return this.autoLogin.call(this, var1,callback);
+        // };
+
+        // ImManager.OooO.implementation = function( roomId:string,callback:any) {
+        //     console.log("joinGroup - var1: " + roomId);
+        //     // hook OooOo00
+        //     return this.OooO.call(this, roomId, callback);
+        // };
+
     });
 }
 
@@ -255,31 +265,31 @@ function hookShuMei(){
 }
 function hookRongIM(){
     Java.perform(function() {
-        var RongIMClient = Java.use("io.rong.imlib.RongIMClientImpl");
-
-        RongIMClient.init.overload('android.content.Context', 'java.lang.String', 'boolean', 'java.lang.Boolean').implementation = function(context:any, rongkey:string, z10:boolean, bool:any) {
-            console.log("init - rongkey: " + rongkey);
-            // hook joinExistChatRoom
-            return this.init.call(this, context, rongkey, z10,bool);
-        };
-
-        RongIMClient.connect.overload('java.lang.String', 'int', 'io.rong.imlib.RongIMClient$ConnectCallback').implementation = function(token:string, timeLimit:number, callback:any) {
-            console.log("connect - token: " + token);
-            // hook joinExistChatRoom
-            return this.connect.call(this, token, timeLimit, callback);
-        };
-
-        RongIMClient.joinChatRoom.implementation = function(chatRoomId:string, defMessageCount:number, listener:any) {
-            console.log("joinChatRoom - chatRoomId: " + chatRoomId);
-            // hook joinExistChatRoom
-            return this.joinChatRoom.call(this, chatRoomId, defMessageCount, listener);
-        };
-
-        RongIMClient.joinExistChatRoom.implementation = function(chatRoomId:string, defMessageCount:number,listener:any) {
-            console.log("joinExistChatRoom - chatRoomId: " + chatRoomId);
-            // hook joinExistChatRoom
-            return this.joinExistChatRoom.call(this, chatRoomId, defMessageCount, listener);
-        };
+        // var RongIMClient = Java.use("io.rong.imlib.RongIMClient");
+        //
+        // RongIMClient.init.overload('android.content.Context', 'java.lang.String', 'boolean', 'java.lang.Boolean').implementation = function(context:any, rongkey:string, z10:boolean, bool:any) {
+        //     console.log("init - rongkey: " + rongkey);
+        //     // hook joinExistChatRoom
+        //     return this.init.call(this, context, rongkey, z10,bool);
+        // };
+        //
+        // RongIMClient.connect.overload('java.lang.String', 'int', 'io.rong.imlib.RongIMClient$ConnectCallback').implementation = function(token:string, timeLimit:number, callback:any) {
+        //     console.log("connect - token: " + token);
+        //     // hook joinExistChatRoom
+        //     return this.connect.call(this, token, timeLimit, callback);
+        // };
+        //
+        // RongIMClient.joinChatRoom.implementation = function(chatRoomId:string, defMessageCount:number, listener:any) {
+        //     console.log("joinChatRoom - chatRoomId: " + chatRoomId);
+        //     // hook joinExistChatRoom
+        //     return this.joinChatRoom.call(this, chatRoomId, defMessageCount, listener);
+        // };
+        //
+        // RongIMClient.joinExistChatRoom.implementation = function(chatRoomId:string, defMessageCount:number,listener:any) {
+        //     console.log("joinExistChatRoom - chatRoomId: " + chatRoomId);
+        //     // hook joinExistChatRoom
+        //     return this.joinExistChatRoom.call(this, chatRoomId, defMessageCount, listener);
+        // };
 
         var RCIMIWEngine = Java.use("cn.rongcloud.im.wrapper.RCIMIWEngineImpl");
         console.log(RCIMIWEngine)
@@ -641,5 +651,17 @@ function hook_qinsi(){
             console.log("DataUtils.encryptByPublicKeyForSpilt - str: " + str);
             return this.encryptByPublicKeyForSpilt.call(this,str);
         }
+    });
+}
+
+function hook_qingmang(){
+    Java.perform(function() {
+        var ResourceUtil = Java.use("imechos.com.base.utils.ResourceUtil");
+        ResourceUtil.getString.implementation = function (id: any) {
+            console.log("id: " + id);
+            let ret = this.getString(id);
+            console.log("res:" + id.toString(16) + "," + ret);
+            return ret;
+        };
     });
 }
