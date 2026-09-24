@@ -173,6 +173,64 @@ function hook_huanxin(){
         };
 
         var GroupMananger = Java.use("com.hyphenate.chat.EMGroupManager");
+        var GroupMananger = Java.use("com.hyphenate.chat.EMGroupManager");
+
+        GroupMananger.joinGroup.implementation = function(groupId:string) {
+            console.log("joinGroup - groupId: " + groupId);
+            // hook joinGroup
+            return this.joinGroup.call(this, groupId);
+        };
+
+        // var methodCallWrapper = Java.use("s3.w4");
+        // methodCallWrapper.onMethodCall.implementation = function(methodCall:any, result:any) {
+        //     const res = this.onMethodCall.call(this, methodCall, result);
+        //     // console.log("onMethodCall - method: " + methodCall.method.value + ",result=" + object2string(result) + ", param:" + methodCall.arguments());
+        //     return res;
+        // }
+    });
+}
+
+function object2string(obj: any, maxDepth: number = 3, currentDepth: number = 0): string {
+    // 处理null或undefined
+    if (obj === null || obj === undefined) {
+        return "null";
+    }
+
+    // 防止无限递归
+    if (currentDepth > maxDepth) {
+        return "<max depth reached>";
+    }
+
+    try {
+        // 处理Java对象
+        if (obj.$className) {
+            // 特殊处理JSONObject
+            if (obj.$className === "org.json.JSONObject") {
+                return obj.toString();
+            }
+
+            // 处理字符串
+            if (obj.$className === "java.lang.String") {
+                return obj.toString();
+            }
+
+            // 获取类信息
+            const clazz = obj.class;
+            if (clazz.isPrimitive()) {
+                return obj.toString();
+            }
+
+            let result = "{\n";
+            const fields:any[] = clazz.getDeclaredFields();
+
+            const MODIFIER_STATIC = 8;
+
+            for (let i = 0; i < fields.length; i++) {
+                const field = fields[i];
+                const mod = field.getModifiers();
+                if((mod & MODIFIER_STATIC) != 0){
+                    continue;
+                }
 
         GroupMananger.joinGroup.implementation = function(groupId:string) {
             console.log("joinGroup - groupId: " + groupId);
